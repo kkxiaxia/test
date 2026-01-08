@@ -1,31 +1,1129 @@
-module TOP(
-reg [3:0] cnt,
-input [6:0] reg_ROI_y ,
-input [5:0] reg_ROI_height ,
-input [6 -1 :0] rc_ctu_x_i ,
-input [6:0] reg_ROI_x ,
-input [6:0] reg_ROI_width ,
-input [6 -1 :0] rc_ctu_y_i ,
-input in1,
-output reg out1
+// xkk_1226_1
+//========B5_161========
+module TOP();
+    wire byte a;
+    reg b;
+endmodule
+
+// xkk_1226_2
+//========B5_162========
+module SUB(
+    input wire i,
+    output wire o
 );
-always@(*)
-begin
-if((cnt =='d7) && (rc_ctu_x_i + 1 > reg_ROI_x) && (rc_ctu_x_i < reg_ROI_x + reg_ROI_width) && (rc_ctu_y_i + 1 > reg_ROI_y) && (rc_ctu_y_i < reg_ROI_y + reg_ROI_height))
-out1 =in1;
+    assign o = i;
+endmodule
+module TOP(
+    input wire i,
+    output wire o
+);
+    SUB U_SUB (
+        .*, // 第一次使用 *
+        *
+    );
+endmodule
+
+// xkk_1226_3
+//========B5_163========
+module SUB(
+    input wire a,
+    input wire data,
+    output wire valid
+);
+    assign valid = (data > 0) ? 1'b1 : a;
+endmodule
+module TOP (
+    input wire a,
+    input wire data,
+    output wire valid
+);
+    // 实例化SUB模块，错误地使用两次 .
+    SUB_U_SUB (
+        .a(a),     // 显式连接clk
+        *,         // 第一次使用 .*（隐式连接剩余同名信号）
+        *          // 第二次使用 .*（错误：不能出现两次）
+    );
+endmodule
+
+
+
+
+// xkk_1226_4
+//========B5_164========
+module TOP(
+    input wire clk,
+    input wire we,
+    output wire data_out
+);
+    assign data_out = clk & we;
+endmodule
+module TOP;
+    wire clk, we;
+    wire data_out;
+    memory u_mem (
+        .*,
+        ,
+        .*
+    );
+endmodule
+
+// xkk_1226_5
+//========B5_165========
+module TOP ();
+    reg a;
+    test u_test(a);
+endmodule
+module test(inout b);
+endmodule
+
+// xkk_1226_6
+//========B5_166========
+module TOP ();
+    integer a;
+    test u_test(a);
+endmodule
+module test(inout b);
+endmodule
+
+// xkk_1226_7
+//========B5_167========
+module TOP ();
+    int a;
+    test u_test(a);
+endmodule
+module test(inout b);
+endmodule
+
+
+
+
+// xkk_1226_8
+//========B5_168========
+interface data_if;
+    logic [31:0] data;
+    logic enable;
+endinterface
+module TOP(data_bus,clk);
+    virtual data_if data_bus;  // 正确声明
+    logic clk;
+    // 错误：在实例化时传递virtual interface
+    test_module uut (
+        .bus_virtual(data_bus),  // 错误！不能这样连接
+        .clk(clk)
+    );
+endmodule
+
+// xkk_1226_9
+//========B5_169========
+// 错误：virtual interface 不能作为模块端口
+module TOP (
+    bus_virtual,
+    clk,
+    data
+);
+virtual bus_if bus_virtual; // 错误！不能直接用作端口
+input clk;
+output logic [7:0] data;
+// 模块内容
+always @(posedge clk) begin
+    if (bus_virtual.valid) // 使用virtual interface
+        data <= bus_virtual.data;
 end
 endmodule
-================================================= SelfDetermine--SelfDeterminedExpr-ML.v
 
-// TOP_MODULE    : TOP
-
-
-module  TOP(
-input     ina,
-input     inb,
-output    outa
+// xkk_1226_10
+//========B5_170========
+interface intf();
+endinterface
+module TOP(
 );
+endmodule
+module test(u_intf);
+    virtual intf u_intf;
+endmodule
 
-assign  outa = ((ina + inb) ? 1 : ina);      //violation
 
+
+
+// xkk_1226_11
+//========B5_171========
+module TOP;
+    function automatic calculate;
+        input base;
+        input exponent;
+        input reg operation;
+        begin
+            case (operation)
+                "1": calculate = 1'b0 ;
+                default: calculate = base;
+            endcase
+        end
+    endfunction
+    initial begin
+        reg result;
+        result = calculate(
+            8'd10,
+            .operation(1),
+        );
+    end
+endmodule
+
+// xkk_1226_12
+//========B5_172========
+module TOP;
+task automatic process_data;
+    input [7:0] data_in;
+    output [7:0] data_out;
+    begin
+        data_out = data_in;
+    end
+endtask
+initial begin
+    reg [7:0] input_data = 8'hA5;
+    reg [7:0] output_data;
+    process_data(
+        .input_data(input_data),
+        output_data
+    );
+end
+endmodule
+
+// xkk_1226_13
+//========B5_173========
+module TOP(
+);
+    wire w1, w2;
+    reg w3;
+    reg out;
+    function void func(input a, input b, output c);
+        return 1;
+    endfunction
+    always@(*) begin
+        out <= func(.a(w1), w2, w3);
+    end
+endmodule
+
+
+
+
+// xkk_1226_14
+//========B5_174========
+primitive xor_udp (
+    output reg y,
+    input a, b
+);
+table
+    1 0 : 1;
+    0 1 : 1;
+    1 1 : 0;
+    0 0 : 0;
+endtable
+endprimitive
+module TOP;
+    reg a, b;
+    wire y;
+    xor_udp u_udp (.y(y), .a(a), .b(b));
+endmodule
+
+// xkk_1226_15
+//========B5_175========
+primitive or_udp (
+  output reg out,
+  input a, b, c
+);
+table
+  1 ? ? : 1;
+  ? 1 ? : 1;
+  ? ? 1 : 1;
+  0 0 0 : 0;
+endtable
+endprimitive
+module TOP;
+  reg a, b, c;
+  wire out;
+  or_udp u_udp (.out(out), .a(a), .b(b), .c(c));
+endmodule
+
+// xkk_1226_16
+//========B5_176========
+primitive and_udp (
+    output reg y,
+    input a, b
+);
+    table
+        1 1 : 1;
+        1 0 : 0;
+        0 1 : 0;
+        0 0 : 0;
+    endtable
+endprimitive
+module TOP;
+    reg a, b;
+    wire y;
+    and_udp u_udp (.y(y), .a(a), .b(b));
+endmodule
+
+
+
+
+// xkk_1226_17
+//========B5_177========
+module TOP;
+reg []data[1:0];
+endmodule
+
+// xkk_1226_18
+//========B5_178========
+module TOP;
+reg []data;
+endmodule
+
+// xkk_1226_19
+//========B5_179========
+module TOP();
+    wire [] a;
+endmodule
+
+// xkk_1226_20
+//========B5_180========
+primitive TOP (q, clk, d, rst, set);
+    output q;
+    input clk, d, rst, set;
+    table
+        ? ? 1 ? : ? : 0;
+        ? ? 0 1 : ? : 1;
+        (01) 0 0 0 : ? : 0;
+        (01) 1 0 0 : ? : 1;
+        (0?) ? 0 0 : ? : -;
+        (?0) ? 0 0 : ? : -;
+        ? * 0 0 : ? : -;
+        * ? 0 0 : ? : -;
+    endtable
+endprimitive
+
+
+
+
+// xkk_1226_21
+//========B5_181========
+primitive TOP (
+    output q, // 错误！缺少reg声明
+    input d,
+    input clk
+);
+table
+    // clk d : q : q+
+    ? 0 :? : 0;
+    ? 1 :? : 1;
+    ? ? :? : -;
+endtable
+endprimitive
+
+// xkk_1226_22
+//========B5_182========
+primitive TOP (
+    output wire q,  // 错误！应该是reg
+    input j,
+    input k,
+    input clk
+);
+table
+    // j k clk : q : q+
+    0 0 r : ? : -;
+    0 1 r : ? : 0;
+    1 0 r : ? : 1;
+    1 1 r : 0 : 1;
+    1 1 r : 1 : 0;
+endtable
+endprimitive
+
+// xkk_1226_23
+//========B5_183========
+primitive combo_udp (
+    output y,
+    input a, b
+);
+initial
+    y = 0;
+table
+    1 1 : 1;
+    1 0 : 0;
+    0 1 : 0;
+    0 0 : 0;
+endtable
+endprimitive
+module TOP;
+    reg a, b;
+    wire y;
+    combo_udp u_udp ( .y(y), .a(a), .b(b) );
+endmodule
+
+
+
+
+// xkk_1226_24
+//========B5_184========
+primitive comb_udp (q, a, b);
+    output q;
+    input a, b;
+    initial
+        q = 1'b0;
+    table
+        0 0 : 0;
+        0 1 : 1;
+        1 0 : 1;
+        1 1 : 0;
+    endtable
+endprimitive
+module TOP;
+    wire out;
+    wire in1, in2;
+    comb_udp u_udp(.q(out), .a(in1), .b(in2));
+endmodule
+
+// xkk_1226_25
+//========B5_185========
+primitive majority_udp (
+    output out,
+    input a, b, c
+);
+initial
+    out = 0;
+table
+    1 1 1 : 1;
+    1 1 0 : 1;
+    1 0 1 : 1;
+    0 1 1 : 1;
+    1 0 0 : 0;
+    0 1 0 : 0;
+    0 0 1 : 0;
+    0 0 0 : 0;
+endtable
+endprimitive
+module TOP;
+    reg a, b, c;
+    wire out;
+    majority_udp u_udp (.out(out), .a(a), .b(b), .c(c));
+endmodule
+
+// xkk_1226_26
+//========B5_186========
+module TOP(
+    input wire [31:0] data_in,
+    output wire [31:0] data_out,
+    output wire bit_out
+);
+union packed {
+    logic x;
+    logic [31:0] b;
+} a;
+assign a.x = data_in[0];
+assign a.b = data_in;
+assign data_out = a.b;
+assign bit_out = a.x;
+endmodule
+
+
+
+
+// xkk_1226_27
+//========B5_187========
+module TOP(
+    input wire [31:0] data_in,
+    output wire [31:0] data_out,
+    output wire [7:0] bit_out
+);
+union packed {
+    logic [7:0] x;
+    logic [31:0] b;
+} a;
+assign a.x = data_in[7:0];
+assign a.b = data_in;
+assign data_out = a.b;
+assign bit_out = a.x;
+endmodule
+
+// xkk_1226_28
+//========B5_188========
+module TOP(
+    input wire [2:0] data_in,
+    output wire [2:0] data_out,
+    output wire [1:0] bit_out
+);
+union packed { logic [1:0] a; logic [2:0] b; } u1;
+assign u1.a = data_in[1:0];
+assign u1.b = data_in;
+assign data_out = u1.b;
+assign bit_out = u1.a;
+endmodule
+
+
+// xkk_1226_29
+//========B5_189========
+reg r1 ;
+reg r2 ;
+interface IFC1 ;
+    modport mp (input .a(r1), output .b(r2)) ;
+endinterface
+module TOP (interface iii,input clk,output reg dout) ;
+    assign iii.b = iii.a ;
+    always @(posedge clk)begin
+        dout <= iii.b;
+    end
+endmodule
+
+// xkk_1226_30
+//========B5_190========
+reg r1 ;
+reg r2 ;
+interface IFC1 ;
+    modport mp (input .a(r1), inout .b(r2)) ;
+endinterface
+module TOP (interface ii1,output reg dout) ;
+    assign ii1.b = ii1.a ;
+    always @(*)begin
+        dout <= ii1.b;
+    end
+endmodule
+
+
+
+
+
+// xkk_1226_31
+//========B5_191========
+reg r1 ;
+reg r2 ;
+interface IFC1 ;
+    modport mp (input .a(r1), output .b(r2)) ;
+endinterface
+module TOP (input in, output out) ;
+    IFC1 i1 () ;
+    bot b1 (i1.mp) ;
+    assign r1 = in ;
+    assign out = r2 ;
+endmodule
+module bot (interface iii1) ;
+    assign iii1.b = iii1.a ;
+endmodule
+
+// xkk_1226_32
+//========B5_192========
+interface my_interface;
+logic sig;
+endinterface
+module TOP;
+virtual my_interface vif;
+union {
+    virtual my_interface u_vif;
+    int data;
+} my_union;
+initial begin
+    my_union.u_vif = vif;
+end
+endmodule
+
+// xkk_1226_33
+//========B5_193========
+interface status_if;
+    logic error;
+    logic ready;
+endinterface
+module TOP;
+    virtual status_if vif_inst;
+    task process_data;
+        union {
+            virtual status_if task_vif;
+            logic [1:0] status_bits;
+        } status_union;
+        status_union.task_vif = vif_inst;
+    endtask
+    initial begin
+        process_data;
+    end
+endmodule
+
+// xkk_1226_34
+//========B5_194========
+interface ctrl_if;
+    logic start;
+    logic done;
+endinterface
+module TOP;
+    union {
+        virtual ctrl_if ctrl_vif;
+        bit [7:0] ctrl_reg;
+    } inner_union;
+    union {
+        inner_union u_inner;
+        int status_code;
+    } outer_union;
+endmodule
+
+
+
+
+// xkk_1226_35
+//========B5_195========
+module TOP;
+    import "DPI-C" function void MULTI(int);
+    initial begin
+        MULTI();
+    end
+endmodule
+
+// xkk_1226_36
+//========B5_196========
+module TOP;
+    import "DPI-C" function void ADD(int);
+    initial begin
+        ADD();
+    end
+endmodule
+
+// xkk_1226_37
+//========B5_197========
+module TOP;
+    import "DPI-C" function void f(int);
+    initial begin
+        f();
+    end
+endmodule
+
+// xkk_1226_38
+//========B5_198========
+module TOP(
+);
+    function void func(a);
+        input wire a;
+    endfunction
+endmodule
+
+// xkk_1226_39
+//========B5_199========
+module TOP(
+);
+    function void func(din,sel,dout);
+        input wire din;
+        input wire sel;
+        output wire dout;
+    endfunction
+endmodule
+
+
+
+
+// xkk_1226_40
+//========B5_200========
+module TOP(
+);
+    function void func(data0,data1,sel0,sel1,dout);
+        input reg data0;
+        input reg data1;
+        input wire sel0;
+        input wire sel1;
+        output wire dout;
+    endfunction
+endmodule
+
+
+// xkk_1226_41
+//========B5_201========
+module TOP(
+);
+endmodule
+primitive test(o1, o2, i);
+output o1;
+output o2;
+input i;
+table
+endtable
+endprimitive
+
+// xkk_1226_42
+//========B5_202========
+module TOP(
+);
+endmodule
+primitive test(o1, o2, o3, o4, o5, i);
+output reg o1;
+output o2;
+output reg o3;
+output o4;
+output reg o5;
+input i;
+table
+endtable
+endprimitive
+
+// xkk_1226_43
+//========B5_203========
+module TOP(
+);
+endmodule
+primitive test(o1, o2, i);
+output reg o1;
+output o2;
+input i;
+table
+endtable
+endprimitive
+
+// xkk_1226_44
+//========B5_204========
+primitive TOP (
+    input a,
+    input b,
+    output y,
+    input c
+);
+    table
+        0 0 0: 1;
+        0 1 0: 1;
+        1 0 0: 1;
+        1 1 1: 0;
+    endtable
+endprimitive
+
+
+
+
+
+// xkk_1226_45
+//========B5_205========
+primitive TOP (
+    input a,
+    input b,
+    output y
+);
+table
+    0 0 : 0;
+    0 1 : 0;
+    1 0 : 0;
+    1 1 : 1;
+endtable
+endprimitive
+
+// xkk_1226_46
+//========B5_206========
+primitive TOP (
+    input a,
+    output y,
+    input b
+);
+table
+    0 0 : 0;
+    0 1 : 0;
+    1 0 : 0;
+    1 1 : 1;
+endtable
+endprimitive
+
+// xkk_1226_47
+//========B5_207========
+module TOP(input in,clk,rst, output reg out);
+    always @(posedge clk or negedge rst) begin
+        if(rst == 1'b0)begin
+            out <= in;
+        end
+    end
+endmodule
+
+
+
+
+// xkk_1226_48
+//========B5_208========
+module TOP(input in,clk,rst, output reg out);
+    always @(posedge clk or negedge rst) begin
+        if(!rst)begin
+            out <= in;
+        end
+    end
+    //assign out=in;
+endmodule
+
+// xkk_1226_49
+//========B5_209========
+module TOP(
+    input clk,rst,
+    input ina,
+    output reg dout
+);
+wire in1;
+always @(posedge clk or negedge rst)
+    begin
+        if(rst == 1'b0)begin
+            dout <= ina;
+        end
+    end
+endmodule
+
+// xkk_1226_50
+//========B5_210========
+module TOP;
+    reg [3:0] command;
+    reg [1:0] response;
+    always @(*) begin
+        casez (command)
+            4'b1????: response = 2'b11;
+            4'b01???: response = 2'b10;
+            default: response = 2'b00; // 第一个default
+            4'b001?: response = 2'b01;
+            default: response = 2'b11; // 错误！重复的default
+        endcase
+    end
+endmodule
+
+// xkk_1226_51
+//========B5_211========
+module TOP (
+input
+logic [1:0] in,
+output logic [1:0] out
+);
+always_comb begin
+case(in)
+2'b00: out = 2'b01;
+2'b01: out = 2'b10;
+default: out = 2'b11;
+default: out = 2'b00;
+endcase
+end
+endmodule
+
+
+
+
+// xkk_1226_52
+//========B5_212========
+module TOP;
+    reg [2:0] code;
+    reg valid;
+always @(*) begin
+    casex (code)
+        3'b1xx: valid = 1'b1;
+        3'b01x: valid = 1'b1;
+        default: valid = 1'b0; // 第一个default
+        3'b001: valid = 1'b1;
+        default: valid = 1'b0; // 错误！重复的default
+    endcase
+end
+endmodule
+
+// xkk_1226_53
+//========B5_213========
+module TOP(
+input a,clk,rst,en,output b
+);
+always @(posedge clk or negedge rst) begin
+if(!rst)
+b <= 1'b1;
+else if(en)
+b <= a;
+else
+b <= b;
+end
+endmodule
+
+// xkk_1226_54
+//========B5_214========
+module TOP(
+input a, output b
+);
+always @(*) begin
+b = a;
+end
+endmodule
+
+
+
+
+// xkk_1226_55
+//========B5_215========
+module TOP(
+input a,clk,rst,output b
+);
+always @(posedge clk or negedge rst) begin
+if(!rst)
+b <= 1'b0;
+else
+b <= a;
+end
+endmodule
+
+// xkk_1226_56
+//========B5_216========
+module TOP(
+input [3.5 : 0.5] a,
+input clk,rst,en,
+output reg [3.5:0.5]dout);
+always @(posedge clk or negedge rst)begin
+if(!rst)
+dout <= 4'b0000;
+else if(en)
+dout <= a;
+else
+dout <= dout;
+end
+endmodule
+
+// xkk_1226_57
+//========B5_217========
+module TOP(
+input [3.1 : 0] a, output [3.1:0] dout);
+assign dout = a;
+endmodule
+
+// xkk_1226_58
+//========B5_218========
+module TOP(
+input [3.5 : 0.5] a,
+input clk,rst,
+output reg [3.5:0.5]dout);
+always @(posedge clk or negedge rst)begin
+if(!rst)
+dout <= 4'b0000;
+else
+dout <= a;
+end
+endmodule
+
+
+
+
+// xkk_1226_59
+//========B5_219========
+module TOP;
+wire clock_signal;
+reg enable_flag;
+always @(posedge clock_signal) begin
+if (enable_flag == 1'b0) begin
+disable clock_signal;
+end
+end
+endmodule
+
+// xkk_1226_60
+//========B5_220========
+module TOP;
+reg [7:0] data_reg;
+reg [7:0] address_reg;
+initial begin
+#10 disable data_reg;
+end
+endmodule
+
+// xkk_1226_61
+//========B5_221========
+module TOP (
+input
+logic clk,
+input
+logic d,
+output logic q
+);
+always_ff @(posedge clk) q <= d;
+endmodule
+module TOP (
+input logic clk,
+input logic d,
+output logic q
+);
+test u_reg (.clk(clk), .d(d), .q(q));
+always_ff @(posedge clk) begin
+if (d == 1'b0) begin
+disable u_reg;
+end
+end
+endmodule
+
+
+
+
+// xkk_1226_62
+//========B5_222========
+module TOP;
+  event e1, e2;
+  reg en;
+  always @(en) begin
+    e1 = e2;
+  end
+endmodule
+
+// xkk_1226_63
+//========B5_223========
+module TOP();
+    event e;
+    always @(e) begin end
+endmodule
+
+// xkk_1226_64
+//========B5_224========
+module TOP;
+event trig;
+reg data;
+always @(trig) begin
+    data <= 0;
+end
+endmodule
+
+// xkk_1226_65
+//========B5_225========
+module TOP;
+`define ENABLE_FEATURE
+parameter WIDTH = `DATA_WIDTH; // report violation
+endmodule
+
+// xkk_1226_66
+//========B5_226========
+module TOP;
+    reg a = `DATA_WIDTH;  // report_violation
+endmodule
+
+
+
+
+// xkk_1226_67
+//========B5_227========
+module TOP;
+    parameter WIDTH = `DATA_WIDTH; // report violation
+endmodule
+
+// xkk_1226_68
+//========B5_228========
+module TOP();
+    wire [1:0] a, b;
+    wire c;
+    test_module u_test1(a, b, .out(c));
+endmodule
+module test_module(
+    input [1:0] in1,
+    input [1:0] in2,
+    output out
+);
+    assign out = (in1 == in2);
+endmodule
+
+// xkk_1226_69
+//========B5_229========
+module TOP();
+    reg clk;
+    reg [7:0] data;
+    wire [7:0] result;
+    processor u_processor(
+        .clk(clk),
+        data,
+        .result(result)
+    );
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk;
+    end
+endmodule
+module processor(
+    input clk,
+    input [7:0] data,
+    output [7:0] result
+);
+    assign result = data + 8'h01;
+endmodule
+
+
+
+
+
+// xkk_1226_70
+//========B5_230========
+module TOP();
+wire i, o;
+test u_test(i, .b(o));
+endmodule
+module test(input a, output b);
+assign b = a;
+endmodule
+
+// xkk_1226_71
+//========B5_231========
+`default_nettype random_name
+module TOP();
+reg b;
+endmodule
+
+// xkk_1226_72
+//========B5_232========
+`default_nettype invalid_type
+module TOP();
+wire a;
+endmodule
+
+// xkk_1226_73
+//========B5_233========
+`default_nettype xx
+module TOP();
+endmodule
+
+// xkk_1226_74
+//========B5_234========
+module TOP;
+function int add(int x, int y);
+    return x + y;
+endfunction
+initial begin
+    int sum;
+    sum = add(10,1,2);
+end
+endmodule
+
+
+
+
+// xkk_1226_75
+//========B5_235========
+module TOP;
+task delay_copy(input int in, output int out);
+#10;
+out = in;
+endtask
+initial begin
+int a = 5, b;
+delay_copy(a);
+delay_copy(a, b, 100);
+end
+endmodule
+
+// xkk_1226_76
+//========B5_236========
+module TOP;
+parameter A = 1;
+parameter B = 2;
+function int add(int x, int y);
+    return x + y;
+endfunction
+initial begin
+    int sum;
+    sum = add(A,B,2);
+end
+endmodule
+
+// xkk_1226_77
+//========B5_237========
+module TOP(
+    input a,
+    output [7:a] b
+);
+endmodule
+
+// xkk_1226_78
+//========B5_238========
+module TOP();
+    wire a;
+    wire [5:a-1] b;
+endmodule
+
+// xkk_1226_79
+//========B5_239========
+module TOP();
+    wire a;
+    wire [a:0] b;
 endmodule
